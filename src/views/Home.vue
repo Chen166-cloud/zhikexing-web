@@ -36,7 +36,7 @@ const aiApps = ref([
   {
     id: 1,
     title: 'AI 聊天',
-    description: '多模态对话机器人，支持图片、音频等',
+    description: '智能文本对话机器人，支持自然语言交互、上下文理解与连续对话',
     route: '/ai-chat',
     icon: ChatBubbleLeftRightIcon
   },
