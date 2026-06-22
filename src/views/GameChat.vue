@@ -3,11 +3,11 @@
     <div class="game-container">
       <!-- 游戏开始界面 -->
       <div v-if="!isGameStarted" class="game-start">
-        <h2>舔狗模拟器</h2>
+        <h2>今天怎么过</h2>
         <div class="input-area">
           <textarea
             v-model="angerReason"
-            placeholder="请输入女友生气的原因（可选）..."
+            placeholder="请输入今天的场景（例：周末在家，但我不想浪费这一天）"
             rows="3"
           ></textarea>
           <button class="start-button" @click="startGame">

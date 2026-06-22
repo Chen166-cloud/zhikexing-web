@@ -1,7 +1,7 @@
 <template>
   <div class="home" :class="{ 'dark': isDark }">
     <div class="container">
-      <h1 class="title">AI 应用中心</h1>
+      <h1 class="title">大模型综合交互平台</h1>
       <div class="cards-grid">
         <router-link 
           v-for="app in aiApps" 
@@ -23,9 +23,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useDark } from '@vueuse/core'
-import { 
+import {
   ChatBubbleLeftRightIcon,
-  HeartIcon,
+  CalendarDaysIcon,
   UserGroupIcon,
   DocumentTextIcon
 } from '@heroicons/vue/24/outline'
@@ -42,11 +42,10 @@ const aiApps = ref([
   },
   {
     id: 2,
-    title: '舔狗模拟器',
-    description: '一个让龟男们舔女友的小游戏',
+    title: '今天怎么过',
+    description: '通过每天的生活选择，把一天顺利过完',
     route: '/game',
-    icon: HeartIcon,
-    iconClass: 'heart-icon'
+    icon: CalendarDaysIcon
   },
   {
     id: 3,
@@ -144,11 +143,6 @@ const aiApps = ref([
       height: 48px;
       margin-bottom: 1rem;
       color: #007CF0;
-
-      &.heart-icon {
-        color: #ff4d4f;
-        animation: pulse 1.5s ease-in-out infinite;
-      }
     }
 
     h2 {
@@ -187,18 +181,6 @@ const aiApps = ref([
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 
