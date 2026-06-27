@@ -252,13 +252,10 @@ const loadChatHistory = async () => {
     chatHistory.value = history || []
     if (history && history.length > 0) {
       await loadChat(history[0].id)
-    } else {
-      await startNewChat()  // 等待 startNewChat 完成
     }
   } catch (error) {
     console.error('加载聊天历史失败:', error)
     chatHistory.value = []
-    await startNewChat()  // 等待 startNewChat 完成
   }
 }
 
