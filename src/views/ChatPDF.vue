@@ -18,8 +18,8 @@
               新聊天
             </button>
           </div>
-          <div 
-            v-for="chat in chatHistory" 
+          <div
+            v-for="chat in chatHistory"
             :key="chat.id"
             class="history-item"
             :class="{ 'active': currentChatId === chat.id }"
@@ -27,6 +27,13 @@
           >
             <DocumentTextIcon class="icon" />
             <span class="title">{{ chat.title || 'PDF对话' }}</span>
+            <button
+              class="delete-btn"
+              @click.stop="deleteChat(chat.id)"
+              title="删除此对话"
+            >
+              <TrashIcon class="delete-icon" />
+            </button>
           </div>
         </div>
       </div>
@@ -119,6 +126,16 @@
         </div>
       </div>
     </div>
+
+    <ConfirmDialog
+      :visible="showDeleteDialog"
+      title="确认删除"
+      message="确定要删除此对话吗？删除后不可恢复。"
+      confirm-text="删除"
+      cancel-text="取消"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+    />
   </div>
 </template>
 
@@ -127,16 +144,18 @@ import { ref, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useDark } from '@vueuse/core'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { 
+import {
   DocumentArrowUpIcon,
   DocumentTextIcon,
   PaperAirplaneIcon,
   ArrowUpTrayIcon,
   PlusIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  TrashIcon
 } from '@heroicons/vue/24/outline'
 import ChatMessage from '../components/ChatMessage.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { chatAPI } from '../services/api'
 import { useRouter } from 'vue-router'
 import PDFViewer from '../components/PDFViewer.vue'
@@ -153,6 +172,8 @@ const currentMessages = ref([])
 const chatHistory = ref([])
 const currentPdfName = ref('')
 const isDragging = ref(false)
+const showDeleteDialog = ref(false)
+const deleteTargetId = ref(null)
 const BASE_URL = 'http://localhost:8080'
 
 // 配置 marked
@@ -296,10 +317,10 @@ const loadChat = async (chatId) => {
   }
 }
 
-// 加载聊天历史
+// 加载聊天历史（侧边栏标题列表）
 const loadChatHistory = async () => {
   try {
-    const history = await chatAPI.getChatHistory('pdf')
+    const history = await chatAPI.listTitles('pdf')
     chatHistory.value = history || []
     if (history && history.length > 0) {
       await loadChat(history[0].id)
@@ -557,6 +578,38 @@ const handleFileUpload = async (event) => {
   }
 }
 
+// 删除对话
+const deleteChat = (chatId) => {
+  deleteTargetId.value = chatId
+  showDeleteDialog.value = true
+}
+
+const handleDeleteConfirm = async () => {
+  showDeleteDialog.value = false
+  const chatId = deleteTargetId.value
+  if (!chatId) return
+  try {
+    await chatAPI.deleteChatHistory(chatId, 'pdf')
+    chatHistory.value = chatHistory.value.filter(chat => chat.id !== chatId)
+    if (currentChatId.value === chatId) {
+      cleanupResources()
+      if (chatHistory.value.length > 0) {
+        await loadChat(chatHistory.value[0].id)
+      }
+    }
+  } catch (error) {
+    console.error('删除对话失败:', error)
+    alert('删除对话失败，请重试')
+  } finally {
+    deleteTargetId.value = null
+  }
+}
+
+const handleDeleteCancel = () => {
+  showDeleteDialog.value = false
+  deleteTargetId.value = null
+}
+
 // 监听清理事件
 onMounted(() => {
   loadChatHistory()
@@ -714,6 +767,36 @@ onUnmounted(() => {
           text-overflow: ellipsis;
           white-space: nowrap;
           color: #333;
+        }
+
+        .delete-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 1.75rem;
+          height: 1.75rem;
+          border: none;
+          border-radius: 0.375rem;
+          background: transparent;
+          color: #999;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+
+          &:hover {
+            background: #ff4d4f;
+            color: #fff;
+          }
+
+          .delete-icon {
+            width: 1rem;
+            height: 1rem;
+          }
+        }
+
+        &:hover .delete-btn {
+          opacity: 1;
         }
       }
     }

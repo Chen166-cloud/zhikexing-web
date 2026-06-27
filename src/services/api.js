@@ -26,7 +26,23 @@ export const chatAPI = {
     }
   },
 
-  // 获取聊天历史列表
+  // 获取会话标题列表（侧边栏用）
+  async listTitles(type = 'chat') {
+    try {
+      const response = await fetch(`${BASE_URL}/ai/history/${type}/titles`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const records = await response.json()
+      // 后端返回 IiipChatRecord 列表，包含 id, title, type, createTime
+      return records || []
+    } catch (error) {
+      console.error('API Error:', error)
+      return []
+    }
+  },
+
+  // 获取聊天历史ID列表
   async getChatHistory(type = 'chat') {  // 添加类型参数
     try {
       const response = await fetch(`${BASE_URL}/ai/history/${type}`)
@@ -37,7 +53,7 @@ export const chatAPI = {
       // 转换为前端需要的格式
       return chatIds.map(id => ({
         id,
-        title: type === 'pdf' ? `PDF对话 ${id.slice(-6)}` : 
+        title: type === 'pdf' ? `PDF对话 ${id.slice(-6)}` :
                type === 'service' ? `咨询 ${id.slice(-6)}` :
                `对话 ${id.slice(-6)}`
       }))
@@ -96,6 +112,22 @@ export const chatAPI = {
       }
 
       return response.body.getReader()
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
+  },
+
+  // 删除聊天历史
+  async deleteChatHistory(chatId, type = 'chat') {
+    try {
+      const response = await fetch(`${BASE_URL}/ai/history/${type}/${chatId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
     } catch (error) {
       console.error('API Error:', error)
       throw error

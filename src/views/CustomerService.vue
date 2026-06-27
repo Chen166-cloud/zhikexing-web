@@ -10,8 +10,8 @@
           </button>
         </div>
         <div class="history-list">
-          <div 
-            v-for="chat in chatHistory" 
+          <div
+            v-for="chat in chatHistory"
             :key="chat.id"
             class="history-item"
             :class="{ 'active': currentChatId === chat.id }"
@@ -19,6 +19,13 @@
           >
             <ChatBubbleLeftRightIcon class="icon" />
             <span class="title">{{ chat.title || '新咨询' }}</span>
+            <button
+              class="delete-btn"
+              @click.stop="deleteChat(chat.id)"
+              title="删除此咨询"
+            >
+              <TrashIcon class="delete-icon" />
+            </button>
           </div>
         </div>
       </div>
@@ -62,6 +69,16 @@
       </div>
     </div>
 
+    <ConfirmDialog
+      :visible="showDeleteDialog"
+      title="确认删除"
+      message="确定要删除此咨询记录吗？删除后不可恢复。"
+      confirm-text="删除"
+      cancel-text="取消"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+    />
+
     <!-- 预约成功弹窗 -->
     <div v-if="showBookingModal" class="booking-modal">
       <div class="modal-content">
@@ -78,13 +95,15 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useDark } from '@vueuse/core'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { 
-  ChatBubbleLeftRightIcon, 
+import {
+  ChatBubbleLeftRightIcon,
   PaperAirplaneIcon,
   PlusIcon,
-  ComputerDesktopIcon
+  ComputerDesktopIcon,
+  TrashIcon
 } from '@heroicons/vue/24/outline'
 import ChatMessage from '../components/ChatMessage.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { chatAPI } from '../services/api'
 
 const isDark = useDark()
@@ -97,6 +116,8 @@ const currentMessages = ref([])
 const chatHistory = ref([])
 const showBookingModal = ref(false)
 const bookingInfo = ref('')
+const showDeleteDialog = ref(false)
+const deleteTargetId = ref(null)
 
 // 配置 marked
 marked.setOptions({
@@ -224,10 +245,10 @@ const loadChat = async (chatId) => {
   }
 }
 
-// 加载聊天历史
+// 加载聊天历史（侧边栏标题列表）
 const loadChatHistory = async () => {
   try {
-    const history = await chatAPI.getChatHistory('service')
+    const history = await chatAPI.listTitles('service')
     chatHistory.value = history || []
     if (history && history.length > 0) {
       await loadChat(history[0].id)
@@ -254,8 +275,39 @@ const startNewChat = async () => {  // 添加 async
   }
   chatHistory.value = [newChat, ...chatHistory.value]
 
-  // 发送初始问候语
-  await sendMessage('你好')
+}
+
+// 删除对话
+const deleteChat = (chatId) => {
+  deleteTargetId.value = chatId
+  showDeleteDialog.value = true
+}
+
+const handleDeleteConfirm = async () => {
+  showDeleteDialog.value = false
+  const chatId = deleteTargetId.value
+  if (!chatId) return
+  try {
+    await chatAPI.deleteChatHistory(chatId, 'service')
+    chatHistory.value = chatHistory.value.filter(chat => chat.id !== chatId)
+    if (currentChatId.value === chatId) {
+      if (chatHistory.value.length > 0) {
+        await loadChat(chatHistory.value[0].id)
+      } else {
+        await startNewChat()
+      }
+    }
+  } catch (error) {
+    console.error('删除咨询失败:', error)
+    alert('删除咨询失败，请重试')
+  } finally {
+    deleteTargetId.value = null
+  }
+}
+
+const handleDeleteCancel = () => {
+  showDeleteDialog.value = false
+  deleteTargetId.value = null
 }
 
 onMounted(() => {
@@ -362,6 +414,36 @@ onMounted(() => {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+
+        .delete-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 1.75rem;
+          height: 1.75rem;
+          border: none;
+          border-radius: 0.375rem;
+          background: transparent;
+          color: #999;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+
+          &:hover {
+            background: #ff4d4f;
+            color: #fff;
+          }
+
+          .delete-icon {
+            width: 1rem;
+            height: 1rem;
+          }
+        }
+
+        &:hover .delete-btn {
+          opacity: 1;
         }
       }
     }

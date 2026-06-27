@@ -34,11 +34,11 @@ router.beforeEach((to, from, next) => {
     <nav class="navbar">
       <router-link to="/" class="logo">Tim's AI Hub</router-link>
       <div class="nav-actions">
-        <button v-if="currentRoute !== '/'" @click="goBack" class="back-btn">返回</button>
         <button @click="toggleDark()" class="theme-toggle">
           <SunIcon v-if="isDark" class="icon" />
           <MoonIcon v-else class="icon" />
         </button>
+        <button v-if="currentRoute !== '/'" @click="goBack" class="back-btn">返回</button>
       </div>
     </nav>
     <router-view v-slot="{ Component }">
@@ -86,7 +86,6 @@ body {
 
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
   background: rgba(255, 255, 255, 0.1);
@@ -110,9 +109,11 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-left: auto;
   }
 
   .back-btn {
+    margin-left: auto;
     padding: 0.4rem 1rem;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 0.5rem;
