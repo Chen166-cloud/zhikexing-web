@@ -252,19 +252,24 @@ const loadChatHistory = async () => {
     chatHistory.value = history || []
     if (history && history.length > 0) {
       await loadChat(history[0].id)
+    } else {
+      // 历史记录为空，自动新建一个会话并保存到后端
+      await startNewChat()
     }
   } catch (error) {
     console.error('加载聊天历史失败:', error)
     chatHistory.value = []
+    // 加载失败也自动新建一个会话
+    await startNewChat()
   }
 }
 
 // 开始新对话
-const startNewChat = async () => {  // 添加 async
+const startNewChat = async () => {
   const newChatId = Date.now().toString()
   currentChatId.value = newChatId
   currentMessages.value = []
-  
+
   // 添加新对话到历史列表
   const newChat = {
     id: newChatId,
@@ -272,6 +277,12 @@ const startNewChat = async () => {  // 添加 async
   }
   chatHistory.value = [newChat, ...chatHistory.value]
 
+  // 持久化到后端
+  try {
+    await chatAPI.createChat(newChatId, newChat.title, 'service')
+  } catch (error) {
+    console.error('保存新咨询到后端失败:', error)
+  }
 }
 
 // 删除对话

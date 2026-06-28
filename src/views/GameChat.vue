@@ -63,7 +63,7 @@
           </div>
           <div class="stat-item">
             <span class="label">📋 选择</span>
-            <span class="value">{{ currentRound }}/{{ MAX_ROUNDS }}</span>
+            <span class="value">{{ currentRound }}</span>
           </div>
         </div>
 
@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useDark } from '@vueuse/core'
 import { PaperAirplaneIcon, CheckCircleIcon } from '@heroicons/vue/24/outline'
 import ChatMessage from '../components/ChatMessage.vue'
@@ -125,7 +125,6 @@ const isGameStarted = ref(false)
 const isGameOver = ref(false)
 const gameResult = ref('')
 const isWin = ref(false)   // 游戏胜利标记
-const MAX_ROUNDS = 10
 const currentRound = ref(0)
 const forgiveness = ref(0)
 const energy = ref(80)      // 体力值
@@ -185,6 +184,17 @@ const resetGame = () => {
   energy.value = 80
   money.value = 300
   gameTime.value = '08:00'
+}
+
+// 将时间字符串 "HH:MM" 转换为分钟数，用于比较
+const timeToMinutes = (timeStr) => {
+  if (!timeStr) return -1
+  const parts = timeStr.split(':')
+  if (parts.length !== 2) return -1
+  const hours = parseInt(parts[0])
+  const minutes = parseInt(parts[1])
+  if (isNaN(hours) || isNaN(minutes)) return -1
+  return hours * 60 + minutes
 }
 
 // 发送消息
@@ -299,25 +309,35 @@ const sendMessage = async (content) => {
       gameResult.value = accumulatedContent
     }
 
-    // 3. AI 标记顺利过完今天
-    if (!shouldEnd && (accumulatedContent.includes('过得不错') || accumulatedContent.includes('顺利过完'))) {
+    // 3. AI 标记顺利过完或勉强过完今天
+    if (!shouldEnd && (accumulatedContent.includes('过得不错') || accumulatedContent.includes('顺利过完') || accumulatedContent.includes('勉强过完'))) {
       shouldEnd = true
-      isWin.value = true
+      isWin.value = forgiveness.value >= 40
       gameResult.value = accumulatedContent
     }
 
-    // 4. 达到最大轮次
-    if (!shouldEnd && currentRound.value >= MAX_ROUNDS) {
-      shouldEnd = true
-      if (forgiveness.value >= 70) {
-        isWin.value = true
-        gameResult.value = '一天结束了！今天过得还不错！🎉'
-      } else if (forgiveness.value >= 40) {
-        isWin.value = true
-        gameResult.value = `一天结束了！当前完成度${forgiveness.value}，勉强过完了今天~`
-      } else {
+    // 4. 时间到达 23:00，自动结算
+    if (!shouldEnd) {
+      const currentMinutes = timeToMinutes(gameTime.value)
+      // 时间 >= 23:00（1380分钟），自动结算
+      if (currentMinutes >= 1380) {
+        shouldEnd = true
+        if (forgiveness.value >= 70) {
+          isWin.value = true
+          gameResult.value = '一天结束了！今天过得还不错！🎉'
+        } else if (forgiveness.value >= 40) {
+          isWin.value = true
+          gameResult.value = `一天结束了！当前完成度${forgiveness.value}，勉强过完了今天~`
+        } else {
+          isWin.value = false
+          gameResult.value = `一天结束了！当前完成度${forgiveness.value}，今天有点失败 😢`
+        }
+      }
+      // 时间超过 02:00（不到 03:00 且不是 08:00 之后），熬夜失控
+      else if (currentMinutes >= 0 && currentMinutes < 180) {
+        shouldEnd = true
         isWin.value = false
-        gameResult.value = `选择次数已达上限(${MAX_ROUNDS}次)，当前完成度${forgiveness.value}，今天有点失败 😢`
+        gameResult.value = '熬夜失控！身体撑不住了 😫'
       }
     }
 
@@ -332,9 +352,6 @@ const sendMessage = async (content) => {
     await scrollToBottom()
   }
 }
-
-// 添加计算属性显示剩余轮次
-const remainingRounds = computed(() => MAX_ROUNDS - currentRound.value)
 
 onMounted(() => {
   adjustTextareaHeight()

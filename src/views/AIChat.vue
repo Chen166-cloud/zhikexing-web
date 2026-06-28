@@ -373,25 +373,37 @@ const loadChatHistory = async () => {
     chatHistory.value = history || []
     if (history && history.length > 0) {
       await loadChat(history[0].id)
+    } else {
+      // 历史记录为空，自动新建一个会话并保存到后端
+      await startNewChat()
     }
   } catch (error) {
     console.error('加载聊天历史失败:', error)
     chatHistory.value = []
+    // 加载失败也自动新建一个会话
+    await startNewChat()
   }
 }
 
 // 开始新对话
-const startNewChat = () => {
+const startNewChat = async () => {
   const newChatId = Date.now().toString()
   currentChatId.value = newChatId
   currentMessages.value = []
-  
+
   // 添加新对话到聊天历史列表
   const newChat = {
     id: newChatId,
     title: `对话 ${newChatId.slice(-6)}`
   }
   chatHistory.value = [newChat, ...chatHistory.value] // 将新对话添加到列表开头
+
+  // 持久化到后端
+  try {
+    await chatAPI.createChat(newChatId, newChat.title, 'chat')
+  } catch (error) {
+    console.error('保存新对话到后端失败:', error)
+  }
 }
 
 // 格式化文件大小

@@ -26,6 +26,24 @@ export const chatAPI = {
     }
   },
 
+  // 创建新的聊天会话（持久化到后端）
+  async createChat(chatId, title, type = 'chat') {
+    try {
+      const response = await fetch(`${BASE_URL}/ai/history/${type}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: chatId, title, type })
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
+  },
+
   // 获取会话标题列表（侧边栏用）
   async listTitles(type = 'chat') {
     try {
