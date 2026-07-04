@@ -26,7 +26,7 @@
             @click="loadChat(chat.id)"
           >
             <DocumentTextIcon class="icon" />
-            <span class="title">{{ chat.title || 'PDF对话' }}</span>
+            <span class="title" :title="getChatTitle(chat)">{{ getChatTitle(chat) }}</span>
             <button
               class="delete-btn"
               @click.stop="deleteChat(chat.id)"
@@ -175,6 +175,7 @@ const isDragging = ref(false)
 const showDeleteDialog = ref(false)
 const deleteTargetId = ref(null)
 const BASE_URL = 'http://localhost:8080'
+const DEFAULT_PDF_TITLE = 'PDF 对话'
 
 // 配置 marked
 marked.setOptions({
@@ -205,6 +206,71 @@ const isDownloadingPdf = ref(false)
 
 // 添加 pdfFile ref
 const pdfFile = ref(null)
+
+const decodePercentText = (value) => {
+  if (!/%[0-9a-f]{2}/i.test(value)) return value
+
+  try {
+    return decodeURIComponent(value)
+  } catch (error) {
+    return value
+  }
+}
+
+const decodeMimeEncodedWords = (value) => {
+  if (!value) return ''
+
+  return value.replace(/=\?([^?]+)\?([bq])\?([^?]*)\?=/gi, (match, charset, encoding, encodedText) => {
+    try {
+      if (encoding.toLowerCase() === 'q') {
+        const percentText = encodedText
+          .replace(/_/g, ' ')
+          .replace(/=([0-9a-f]{2})/gi, '%$1')
+        return decodeURIComponent(percentText)
+      }
+
+      const binary = atob(encodedText)
+      const bytes = Uint8Array.from(binary, char => char.charCodeAt(0))
+      return new TextDecoder(charset).decode(bytes)
+    } catch (error) {
+      return match
+    }
+  })
+}
+
+const normalizePdfTitle = (title, chatId = '') => {
+  const decodedTitle = decodeMimeEncodedWords(decodePercentText(String(title || '')))
+    .replace(/^PDF对话[:：]\s*/i, '')
+    .replace(/^PDF\s*对话[:：]\s*/i, '')
+    .trim()
+
+  if (decodedTitle) return decodedTitle
+  if (chatId) return `${DEFAULT_PDF_TITLE} ${String(chatId).slice(-6)}`
+  return DEFAULT_PDF_TITLE
+}
+
+const getChatTitle = (chat) => normalizePdfTitle(chat?.title, chat?.id)
+
+const cleanFilenameHeaderValue = (value) => String(value || '')
+  .trim()
+  .replace(/^["']|["']$/g, '')
+  .replace(/^[A-Za-z0-9_-]+'[^']*'/, '')
+
+const extractFilenameFromContentDisposition = (contentDisposition) => {
+  if (!contentDisposition) return ''
+
+  const filenameStarMatch = contentDisposition.match(/filename\*\s*=\s*("?)([^";]+)\1/i)
+  if (filenameStarMatch?.[2]) {
+    return normalizePdfTitle(cleanFilenameHeaderValue(filenameStarMatch[2]))
+  }
+
+  const filenameMatch = contentDisposition.match(/filename\s*=\s*("?)([^";]+)\1/i)
+  if (filenameMatch?.[2]) {
+    return normalizePdfTitle(cleanFilenameHeaderValue(filenameMatch[2]))
+  }
+
+  return ''
+}
 
 // 修改资源清理函数
 const cleanupResources = () => {
@@ -286,13 +352,7 @@ const loadChat = async (chatId) => {
     
     // 获取文件名
     const contentDisposition = response.headers.get('content-disposition')
-    let filename = 'document.pdf'
-    if (contentDisposition) {
-      const matches = contentDisposition.match(/filename=["']?([^"']+)["']?/)
-      if (matches && matches[1]) {
-        filename = decodeURIComponent(matches[1])
-      }
-    }
+    let filename = extractFilenameFromContentDisposition(contentDisposition) || 'document.pdf'
     
     // 更新当前文件名和历史记录中的标题
     currentPdfName.value = filename
@@ -380,7 +440,7 @@ const handleDrop = async (event) => {
     // 添加到聊天历史
     const newChat = {
       id: currentChatId.value,
-      title: `PDF对话: ${file.name.slice(0, 20)}${file.name.length > 20 ? '...' : ''}`
+      title: file.name
     }
     
     // 更新聊天历史 - 避免重复添加
@@ -548,7 +608,7 @@ const handleFileUpload = async (event) => {
     // 添加到聊天历史
     const newChat = {
       id: currentChatId.value,
-      title: `PDF对话: ${file.name.slice(0, 20)}${file.name.length > 20 ? '...' : ''}`
+      title: file.name
     }
     
     // 更新聊天历史 - 避免重复添加
@@ -759,14 +819,18 @@ onUnmounted(() => {
           width: 1.25rem;
           height: 1.25rem;
           color: #666;
+          flex-shrink: 0;
         }
         
         .title {
           flex: 1;
+          min-width: 0;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
           color: #333;
+          font-size: 0.95rem;
+          line-height: 1.35;
         }
 
         .delete-btn {
