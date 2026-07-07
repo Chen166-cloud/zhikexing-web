@@ -1,10 +1,10 @@
 <template>
-  <div class="home" :class="{ 'dark': isDark }">
+  <div class="home" :class="{ dark: isDark }">
     <div class="container">
       <h1 class="title">大模型综合交互平台</h1>
       <div class="cards-grid">
-        <router-link 
-          v-for="app in aiApps" 
+        <router-link
+          v-for="app in aiApps"
           :key="app.id"
           :to="app.route"
           class="card"
@@ -27,7 +27,7 @@ import {
   ChatBubbleLeftRightIcon,
   CalendarDaysIcon,
   UserGroupIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
 } from '@heroicons/vue/24/outline'
 
 const isDark = useDark()
@@ -36,162 +36,142 @@ const aiApps = ref([
   {
     id: 1,
     title: 'AI 聊天',
-    description: '智能文本对话机器人，支持自然语言交互',
+    description: '自然语言对话',
     route: '/ai-chat',
-    icon: ChatBubbleLeftRightIcon
+    icon: ChatBubbleLeftRightIcon,
   },
   {
     id: 2,
     title: '今天怎么过',
-    description: '通过每天的生活选择，把一天顺利过完',
+    description: '用选择推进一天的生活模拟',
     route: '/game',
-    icon: CalendarDaysIcon
+    icon: CalendarDaysIcon,
   },
   {
     id: 3,
     title: '智能客服',
-    description: '24小时在线的智能课程咨询师',
+    description: '课程咨询与试听预约助手',
     route: '/customer-service',
-    icon: UserGroupIcon
+    icon: UserGroupIcon,
   },
   {
     id: 4,
     title: 'ChatPDF',
-    description: '打造你的个人知识库，与知识库自由对话',
+    description: '上传 PDF 并围绕文档问答',
     route: '/chat-pdf',
-    icon: DocumentTextIcon
-  }
+    icon: DocumentTextIcon,
+  },
 ])
 </script>
 
 <style scoped lang="scss">
 .home {
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
   padding: 2rem;
-  background: var(--bg-color);
+  background:
+    radial-gradient(circle at top left, rgba(0, 124, 240, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(0, 173, 181, 0.1), transparent 28%),
+    var(--bg-color);
   transition: background-color 0.3s;
 
   .container {
-    max-width: 1600px;
+    max-width: 1500px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 2rem;
   }
 
   .title {
     text-align: center;
     font-size: 2.5rem;
-    margin-bottom: 3rem;
-    background: linear-gradient(45deg, #007CF0, #00DFD8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: fadeIn 1s ease-out;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    color: var(--text-color);
   }
 
   .cards-grid {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
     justify-items: center;
-    padding: 1rem;
 
     @media (min-width: 768px) {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    
+
     @media (min-width: 1200px) {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 
   .card {
-    position: relative;
     width: 100%;
     max-width: 320px;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 2rem;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.75rem;
     text-decoration: none;
     color: inherit;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-
-    .dark & {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 
     &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-      
-      .dark & {
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-      }
-    }
-
-    .card-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 1rem;
-      color: #007CF0;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    p {
-      color: #666;
-      font-size: 1rem;
-
-      .dark & {
-        color: #999;
-      }
+      transform: translateY(-4px);
+      border-color: rgba(0, 124, 240, 0.45);
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
     }
   }
 
-  &.dark {
-    background: #1a1a1a;
-    
-    .card {
-      background: rgba(255, 255, 255, 0.05);
-      
-      p {
-        color: #999;
-      }
-    }
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .icon {
+    width: 48px;
+    height: 48px;
+    color: #007cf0;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  p {
+    min-height: 3rem;
+    color: #5b6472;
+    line-height: 1.5;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.dark {
+  .card {
+    background: rgba(36, 40, 48, 0.92);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  p {
+    color: #aab3c2;
   }
 }
 
 @media (max-width: 768px) {
   .home {
     padding: 1rem;
-    
+
     .container {
-      padding: 0 1rem;
+      padding: 1rem 0;
     }
-    
+
     .title {
       font-size: 2rem;
     }
@@ -201,4 +181,4 @@ const aiApps = ref([
     }
   }
 }
-</style> 
+</style>

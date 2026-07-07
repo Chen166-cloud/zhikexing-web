@@ -156,7 +156,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import ChatMessage from '../components/ChatMessage.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
-import { chatAPI } from '../services/api'
+import { chatAPI, getAuthHeaders } from '../services/api'
 import { useRouter } from 'vue-router'
 import PDFViewer from '../components/PDFViewer.vue'
 
@@ -347,7 +347,9 @@ const loadChat = async (chatId) => {
 
     // 从服务器获取 PDF
     isDownloadingPdf.value = true
-    const response = await fetch(`${BASE_URL}/ai/pdf/file/${chatId}`)
+    const response = await fetch(`${BASE_URL}/ai/pdf/file/${chatId}`, {
+      headers: getAuthHeaders()
+    })
     if (!response.ok) throw new Error('获取 PDF 失败')
     
     // 获取文件名
@@ -423,6 +425,7 @@ const handleDrop = async (event) => {
     // 发送上传请求，修正 API 路径
     const response = await fetch(`${BASE_URL}/ai/pdf/upload/${uploadChatId}`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
     
@@ -591,6 +594,7 @@ const handleFileUpload = async (event) => {
     // 发送上传请求，修正 API 路径
     const response = await fetch(`${BASE_URL}/ai/pdf/upload/${uploadChatId}`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
     
