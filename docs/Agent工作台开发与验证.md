@@ -1,6 +1,6 @@
 # Agent 工作台开发与验证
 
-日期：2026-09-18。前端目录：`D:/develop/web-intelligent-integrated-interaction-platform`。
+日期：2026-09-18。前端仓库：`web-intelligent-integrated-interaction-platform`（本文路径均相对于仓库根目录）。
 
 ## 改造内容
 

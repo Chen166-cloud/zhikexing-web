@@ -2,9 +2,29 @@
 
 Vue 3、TypeScript、Pinia 与 Naive UI 实现的知识与业务办理前端。主入口为 `/agent`；首页保留经典应用入口，并引导进入工作台。浏览器只访问 Java，模型 Key 由后端配置。
 
+三端功能、业务状态、权限和当前 UI/API 差异见 [产品功能说明书（研发版）](https://gitee.com/chy66666/intelligent-integrated-interaction-platform/blob/master/docs/product/产品功能说明书-研发版.md)。
+
+## 三个独立项目
+
+| 项目 | Git 仓库 | 职责 |
+|---|---|---|
+| Java 后端 | [intelligent-integrated-interaction-platform](https://gitee.com/chy66666/intelligent-integrated-interaction-platform.git) | 登录、工作空间成员、对外 API、审批、业务幂等与 outbox |
+| Python 运行时 | [intelligent-agent-runtime](https://gitee.com/chy66666/intelligent-agent-runtime.git) | LangGraph、checkpoint、事件、知识库、模型适配与评测 |
+| Vue 前端 | [web-intelligent-integrated-interaction-platform](https://gitee.com/chy66666/web-intelligent-integrated-interaction-platform.git) | 工作台、SSE、审批卡、引用预览、知识与评测管理 |
+
+推荐在任意开发目录下将三个仓库克隆为同级目录：
+
+```sh
+git clone https://gitee.com/chy66666/intelligent-integrated-interaction-platform.git
+git clone https://gitee.com/chy66666/intelligent-agent-runtime.git
+git clone https://gitee.com/chy66666/web-intelligent-integrated-interaction-platform.git
+```
+
+Java 仓库的 Compose 默认从同级目录获取 Python、Vue 构建上下文；非同级存放时，在 Java 仓库的本地 `.env` 配置 `AGENT_RUNTIME_PATH` 和 `FRONTEND_PATH`，无需修改代码。三个服务通过可配置的 HTTP 地址联动，不依赖开发者电脑上的固定路径。
+
 ## 本地开发
 
-使用 Node.js 22 和 npm：
+使用 Node.js 22 和 npm，在克隆得到的 `web-intelligent-integrated-interaction-platform` 仓库根目录执行：
 
 ```powershell
 npm ci
