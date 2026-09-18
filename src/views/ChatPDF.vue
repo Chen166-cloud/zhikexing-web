@@ -156,7 +156,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import ChatMessage from '../components/ChatMessage.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
-import { chatAPI, getAuthHeaders } from '../services/api'
+import { chatAPI, getAuthHeaders, BASE_URL, assertOk } from '../services/api'
 import { useRouter } from 'vue-router'
 import PDFViewer from '../components/PDFViewer.vue'
 
@@ -174,7 +174,6 @@ const currentPdfName = ref('')
 const isDragging = ref(false)
 const showDeleteDialog = ref(false)
 const deleteTargetId = ref(null)
-const BASE_URL = 'http://localhost:8080'
 const DEFAULT_PDF_TITLE = 'PDF 对话'
 
 // 配置 marked
@@ -433,6 +432,7 @@ const handleDrop = async (event) => {
       throw new Error(`上传失败: ${response.status}`)
     }
     
+    await assertOk(response)
     const data = await response.json()
     
     // 保存聊天 ID 和文件名
@@ -464,7 +464,7 @@ const handleDrop = async (event) => {
     
   } catch (error) {
     console.error('上传失败:', error)
-    alert('文件上传失败，请重试')
+    alert(error.message || '文件上传失败，请重试')
   } finally {
     isUploading.value = false
     uploadingFileName.value = ''
@@ -536,7 +536,6 @@ const sendMessage = async () => {
       if (done) break
       
       const chunk = decoder.decode(value, { stream: true })
-      console.log('收到流式响应块:', chunk)
       result += chunk
       
       // 使用索引直接替换整个消息对象，强制触发响应式更新
@@ -602,6 +601,7 @@ const handleFileUpload = async (event) => {
       throw new Error(`上传失败: ${response.status}`)
     }
     
+    await assertOk(response)
     const data = await response.json()
     
     // 保存聊天 ID 和文件名
@@ -633,7 +633,7 @@ const handleFileUpload = async (event) => {
     
   } catch (error) {
     console.error('上传失败:', error)
-    alert('文件上传失败，请重试')
+    alert(error.message || '文件上传失败，请重试')
   } finally {
     isUploading.value = false
     uploadingFileName.value = ''

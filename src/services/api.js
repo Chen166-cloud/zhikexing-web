@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8080'
+export const BASE_URL = (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(/\/$/, '')
 const TOKEN_KEY = 'iiip_token'
 
 export const authStorage = {
@@ -25,15 +25,26 @@ export const getAuthHeaders = (headers = {}) => {
 
 const parseJson = async (response) => {
   const text = await response.text()
-  return text ? JSON.parse(text) : {}
+  if (!text) return {}
+  try {
+    return JSON.parse(text)
+  } catch {
+    // 代理和跨域过滤器可能返回纯文本错误，保留实际反馈。
+    throw new Error(response.ok ? '服务响应格式错误，请重试' : text)
+  }
 }
 
-const assertOk = async (response) => {
+export const assertOk = async (response) => {
   if (response.status === 401) {
     authStorage.clearToken()
   }
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
+    const result = await response.clone().json().catch(() => ({}))
+    throw new Error(result.message || result.msg || `请求失败（${response.status}）`)
+  }
+  if (response.headers.get('content-type')?.includes('application/json')) {
+    const result = await response.clone().json()
+    if (result.ok === 0 || result.ok === false) throw new Error(result.msg || '请求未成功')
   }
 }
 
@@ -134,7 +145,7 @@ export const chatAPI = {
       return await response.json() || []
     } catch (error) {
       console.error('API Error:', error)
-      return []
+      throw error
     }
   },
 
@@ -153,7 +164,7 @@ export const chatAPI = {
       }))
     } catch (error) {
       console.error('API Error:', error)
-      return []
+      throw error
     }
   },
 
@@ -170,7 +181,7 @@ export const chatAPI = {
       }))
     } catch (error) {
       console.error('API Error:', error)
-      return []
+      throw error
     }
   },
 

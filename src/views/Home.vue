@@ -1,7 +1,14 @@
 <template>
   <div class="home" :class="{ dark: isDark }">
     <div class="container">
-      <h1 class="title">大模型综合交互平台</h1>
+      <div class="home-hero">
+        <p class="home-eyebrow">KNOWLEDGE INTO ACTION</p>
+        <h1 class="title">让知识，成为行动。</h1>
+        <p class="home-intro">一个工作空间，连接文档、对话与业务。<br>让 Agent 查阅依据、提出方案，并在您确认后完成办理。</p>
+        <router-link to="/agent" class="workspace-cta">进入 Agent 工作台 <span>↗</span></router-link>
+        <div class="hero-capabilities"><span>文档与页码引用</span><span>实时任务轨迹</span><span>审批与执行回执</span></div>
+      </div>
+      <div class="legacy-heading"><h2>经典应用</h2><span>旧版入口继续保留；新任务推荐使用工作台。</span></div>
       <div class="cards-grid">
         <router-link
           v-for="app in aiApps"
@@ -75,16 +82,26 @@ const aiApps = ref([
   transition: background-color 0.3s;
 
   .container {
-    max-width: 1500px;
+    max-width: 1220px;
     margin: 0 auto;
     padding: 2rem;
   }
+
+  .home-hero { padding: 40px 0 60px; text-align: center; }
+  .home-eyebrow { min-height: 0; color: #668a78; letter-spacing: 3px; font-size: 11px; margin-bottom: 25px; }
+  .home-intro { font-size: 15px; line-height: 1.9; margin-top: 20px; }
+  .workspace-cta { display: inline-flex; align-items: center; gap: 34px; margin-top: 30px; padding: 13px 25px; border-radius: 10px; background: #397366; color: #fff; font-size: 14px; text-decoration: none; box-shadow: 0 8px 20px #39736620; }
+  .workspace-cta:hover { background: #2d6155; }
+  .hero-capabilities { display: flex; justify-content: center; gap: 24px; font-size: 11px; color: #839087; margin-top: 26px; }
+  .legacy-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 20px; }
+  .legacy-heading h2 { font-size: 16px; }
+  .legacy-heading span { font-size: 11px; color: #839087; }
 
   .title {
     text-align: center;
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0;
     color: var(--text-color);
   }
 
@@ -106,7 +123,7 @@ const aiApps = ref([
   .card {
     width: 100%;
     max-width: 320px;
-    min-height: 220px;
+    min-height: 175px;
     display: flex;
     align-items: center;
     justify-content: center;

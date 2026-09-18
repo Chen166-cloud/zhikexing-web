@@ -45,9 +45,9 @@ const refreshAuthState = async () => {
   try {
     user.value = await authAPI.me()
   } catch (error) {
-    user.value = null
-    isAuthed.value = false
-    if (!isAuthPage.value) {
+    // 仅认证失效时退出，短暂网络故障保留当前登录状态。
+    isAuthed.value = Boolean(authStorage.getToken())
+    if (!isAuthed.value && !isAuthPage.value) {
       router.replace({
         path: '/login',
         query: route.fullPath === '/' ? {} : { redirect: route.fullPath },
@@ -119,6 +119,7 @@ onUnmounted(() => {
   <div class="app" :class="{ dark: isDark }">
     <nav class="navbar">
       <router-link to="/" class="logo">Tim's AI Hub</router-link>
+      <router-link v-if="showUserArea" to="/agent" class="agent-nav-link">Agent 工作台</router-link>
       <div class="nav-actions">
         <button v-if="showUserArea" class="user-pill" type="button" title="修改昵称" @click="openNicknameDialog">
           <UserCircleIcon class="icon" />
@@ -137,6 +138,7 @@ onUnmounted(() => {
         </button>
       </div>
     </nav>
+    <div v-if="['/ai-chat', '/customer-service', '/chat-pdf', '/game', '/comfort-simulator'].includes(route.path)" class="legacy-notice">您正在使用经典应用。新版支持完整历史、文档引用与预约审批。<router-link to="/agent">进入 Agent 工作台 →</router-link></div>
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />
@@ -308,6 +310,20 @@ input {
     height: 21px;
     flex: 0 0 auto;
   }
+}
+
+.agent-nav-link { color: #397366; text-decoration: none; font-size: 13px; margin-left: 12px; font-weight: 600; }
+.legacy-notice { padding: 9px 20px; background: #edf4f0; color: #527365; font-size: 12px; text-align: center; }
+.legacy-notice a { margin-left: 12px; color: #285e4e; font-weight: 600; }
+.dark .agent-nav-link { color: #91c5b1; }
+.dark .legacy-notice { background: #26372e; color: #a5c4b2; }
+.dark .legacy-notice a { color: #a5d8c0; }
+@media (max-width: 600px) {
+  .agent-nav-link { display: none; }
+  .navbar .logo { white-space: nowrap; flex-shrink: 0; }
+  .navbar .nav-actions { gap: 6px; }
+  .navbar .user-pill { padding: 0 7px; }
+  .navbar .user-pill span { display: none; }
 }
 
 .nickname-overlay {

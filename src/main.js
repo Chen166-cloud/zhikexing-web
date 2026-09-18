@@ -1,7 +1,2 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-
-const app = createApp(App)
-app.use(router)
-app.mount('#app') 
+// 兼容旧入口，统一加载带 Pinia 的应用。
+import './main.ts'

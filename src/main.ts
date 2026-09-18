@@ -11,4 +11,5 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-app.mount('#app')
+// 首次路由解析完成后挂载，避免直接打开注册页时被认证刷新误跳到登录页。
+router.isReady().then(() => app.mount('#app'))

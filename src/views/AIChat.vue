@@ -323,10 +323,13 @@ const sendMessage = async () => {
     while (true) {
       try {
         const { value, done } = await reader.read()
-        if (done) break
+        if (done) {
+          accumulatedContent += decoder.decode()
+          break
+        }
         
         // 累积新内容
-        accumulatedContent += decoder.decode(value)  // 追加新内容
+        accumulatedContent += decoder.decode(value, { stream: true })  // 追加新内容
         
         await nextTick(() => {
           // 更新消息，使用累积的内容
@@ -339,8 +342,7 @@ const sendMessage = async () => {
         })
         await scrollToBottom()
       } catch (readError) {
-        console.error('读取流错误:', readError)
-        break
+        throw readError
       }
     }
   } catch (error) {

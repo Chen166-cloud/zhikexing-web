@@ -15,7 +15,6 @@
     "@pdftron/webviewer": "^11.3.0",
     "@vueuse/components": "^12.7.0",
     "@vueuse/core": "^12.7.0",
-    "web-intelligent-integrated-interaction-platform": "file:",
     "dompurify": "^3.2.4",
     "fs-extra": "^11.2.0",
     "highlight.js": "^11.11.1",
