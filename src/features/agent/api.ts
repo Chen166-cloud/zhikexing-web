@@ -8,6 +8,10 @@ import type {
   KnowledgeDocument,
   Metrics,
   Run,
+  TrialCampaign,
+  TrialCatalog,
+  TrialClaimResult,
+  TrialReconciliation,
   Workspace,
 } from './types'
 
@@ -29,12 +33,12 @@ export function apiUrl(path: string, query: Record<string, string | number> = {}
 }
 export async function authorizedFetch(url: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers)
-  const token = localStorage.getItem('iiip_token')
+  const token = localStorage.getItem('zhikexing_token')
   if (token) headers.set('Authorization', token)
   const response = await fetch(url, { ...options, headers })
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem('iiip_token')
+      localStorage.removeItem('zhikexing_token')
       window.dispatchEvent(new CustomEvent('auth-changed'))
     }
     const text = await response.text()
@@ -117,4 +121,31 @@ export const agentApi = {
   evaluate: (workspaceId: string, knowledgeBaseId: string, cases: EvaluationCase[]) =>
     request<Evaluation>('/evaluations', {}, 'POST', { workspaceId, knowledgeBaseId, cases }),
   metrics: (workspaceId: string) => request<Metrics>('/metrics', { workspaceId }),
+  trialCampaigns: (workspaceId: string) =>
+    request<TrialCampaign[]>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns`),
+  trialCampaign: (workspaceId: string, campaignId: string) =>
+    request<TrialCampaign>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns/${encodeURIComponent(campaignId)}`),
+  trialCatalog: (workspaceId: string) =>
+    request<TrialCatalog>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/catalog`),
+  createTrialCampaign: (workspaceId: string, body: {
+    title: string
+    courseId: string
+    schoolId: string
+    capacity: number
+    startsAt: string
+    endsAt: string
+  }) =>
+    request<TrialCampaign>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns`, {}, 'POST', body),
+  publishTrialCampaign: (workspaceId: string, campaignId: string) =>
+    request<TrialCampaign>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns/${encodeURIComponent(campaignId)}/publish`, {}, 'POST'),
+  pauseTrialCampaign: (workspaceId: string, campaignId: string) =>
+    request<TrialCampaign>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns/${encodeURIComponent(campaignId)}/pause`, {}, 'POST'),
+  submitTrialClaim: (workspaceId: string, campaignId: string, clientRequestId: string) =>
+    request<TrialClaimResult>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns/${encodeURIComponent(campaignId)}/claims`, {}, 'POST', { clientRequestId }),
+  trialClaim: (workspaceId: string, requestId: string) =>
+    request<TrialClaimResult>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/claims/${encodeURIComponent(requestId)}`),
+  trialClaims: (workspaceId: string) =>
+    request<TrialClaimResult[]>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/claims`),
+  trialReconciliation: (workspaceId: string, campaignId: string) =>
+    request<TrialReconciliation>(`/workspaces/${encodeURIComponent(workspaceId)}/trials/campaigns/${encodeURIComponent(campaignId)}/reconciliation`),
 }

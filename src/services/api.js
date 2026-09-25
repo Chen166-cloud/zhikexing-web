@@ -1,5 +1,5 @@
 export const BASE_URL = (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(/\/$/, '')
-const TOKEN_KEY = 'iiip_token'
+const TOKEN_KEY = 'zhikexing_token'
 
 export const authStorage = {
   getToken() {

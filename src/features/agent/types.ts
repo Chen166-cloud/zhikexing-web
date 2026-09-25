@@ -77,13 +77,46 @@ export interface Approval {
   result?: Record<string, unknown>
 }
 export interface TrialClaimResult {
-  actionId: string
+  actionId?: string | null
   requestId: string
   campaignId: string
   status: 'PENDING' | 'RESERVED' | 'SUCCEEDED' | 'REJECTED'
   orderId?: string | null
   reason?: string | null
   amountCent?: number
+  source?: 'DIRECT' | 'AGENT'
+  createdAt?: string
+  campaignTitle?: string
+}
+export interface TrialCampaign {
+  id: string
+  title: string
+  courseId: string
+  schoolId: string
+  courseName: string
+  schoolName: string
+  capacity: number
+  remaining: number
+  remainingMeaning: string
+  startsAt: string
+  endsAt: string
+  amountCent: number
+  status: 'DRAFT' | 'LIVE' | 'PAUSED'
+}
+export interface TrialCatalog {
+  courses: { id: string; name: string }[]
+  campuses: { id: string; name: string; city?: string }[]
+}
+export interface TrialReconciliation {
+  capacity: number
+  remaining: number
+  confirmedOrders: number
+  pending: number
+  reserved: number
+  releasePending: number
+  databaseInvariantHolds: boolean
+  redis: Record<string, string | number>
+  note: string
 }
 export interface KnowledgeBase {
   id: string

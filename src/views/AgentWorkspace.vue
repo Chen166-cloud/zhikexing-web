@@ -43,6 +43,7 @@ import {
 } from '../features/agent/types'
 import KnowledgePanel from '../features/agent/KnowledgePanel.vue'
 import EvaluationPanel from '../features/agent/EvaluationPanel.vue'
+import TrialCampaignPanel from '../features/agent/TrialCampaignPanel.vue'
 import DocumentPreview from '../features/agent/DocumentPreview.vue'
 import '../features/agent/workspace.css'
 
@@ -299,6 +300,9 @@ onBeforeUnmount(() => store.disconnect())
           <button :class="{ current: tab === 'knowledge' }" @click="tab = 'knowledge'">
             <DocumentTextIcon /><span>知识库</span><small>{{ store.knowledgeBases.length }}</small>
           </button>
+          <button :class="{ current: tab === 'trials' }" @click="tab = 'trials'">
+            <ClockIcon /><span>免费试听</span>
+          </button>
           <button :class="{ current: tab === 'evaluations' }" @click="tab = 'evaluations'">
             <ChartBarIcon /><span>评测与用量</span>
           </button>
@@ -342,7 +346,7 @@ onBeforeUnmount(() => store.disconnect())
             }}</span
             ><span class="breadcrumb-divider">/</span
             ><strong>{{
-              tab === 'knowledge' ? '知识库' : tab === 'evaluations' ? '评测与用量' : '智能助理'
+              tab === 'knowledge' ? '知识库' : tab === 'trials' ? '免费试听' : tab === 'evaluations' ? '评测与用量' : '智能助理'
             }}</strong>
           </div>
           <span class="header-note">让知识成为行动</span>
@@ -362,6 +366,11 @@ onBeforeUnmount(() => store.disconnect())
           ></NAlert
         >
         <KnowledgePanel v-if="tab === 'knowledge'" />
+        <TrialCampaignPanel
+          v-else-if="tab === 'trials'"
+          :workspace-id="store.workspaceId"
+          :role="store.workspaces.find((item) => item.id === store.workspaceId)?.role || ''"
+        />
         <EvaluationPanel v-else-if="tab === 'evaluations'" />
         <div v-else class="assistant-layout">
           <section class="conversation-area">

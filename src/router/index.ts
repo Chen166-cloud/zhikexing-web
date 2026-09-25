@@ -64,7 +64,7 @@ router.beforeEach((to, from) => {
     window.dispatchEvent(new CustomEvent('cleanupChatPDF'))
   }
 
-  const hasToken = Boolean(localStorage.getItem('iiip_token'))
+  const hasToken = Boolean(localStorage.getItem('zhikexing_token'))
   if (!to.meta.public && !hasToken) {
     return {
       path: '/login',

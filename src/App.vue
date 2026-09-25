@@ -28,7 +28,10 @@ const nicknameSaving = ref(false)
 const isAuthPage = computed(() => route.path === '/login' || route.path === '/register')
 const showBack = computed(() => isAuthed.value && route.path !== '/' && !isAuthPage.value)
 const showUserArea = computed(() => isAuthed.value && !isAuthPage.value)
-const displayName = computed(() => user.value?.nickName || user.value?.userName || '用户')
+const displayName = computed(() => {
+  const name = user.value?.nickName || user.value?.userName
+  return name && !/^\d{12,}$/.test(String(name)) ? name : '我的账户'
+})
 
 const refreshAuthState = async () => {
   isAuthed.value = Boolean(authStorage.getToken())
@@ -117,25 +120,33 @@ onUnmounted(() => {
 
 <template>
   <div class="app" :class="{ dark: isDark }">
-    <nav class="navbar">
-      <router-link to="/" class="logo">Tim's AI Hub</router-link>
-      <router-link v-if="showUserArea" to="/agent" class="agent-nav-link">Agent 工作台</router-link>
-      <div class="nav-actions">
-        <button v-if="showUserArea" class="user-pill" type="button" title="修改昵称" @click="openNicknameDialog">
-          <UserCircleIcon class="icon" />
-          <span>{{ displayName }}</span>
-        </button>
-        <button class="icon-btn" title="切换主题" @click="toggleDark()">
-          <SunIcon v-if="isDark" class="icon" />
-          <MoonIcon v-else class="icon" />
-        </button>
-        <button v-if="showBack" class="icon-btn" title="返回首页" @click="goBack">
-          <ArrowLeftIcon class="icon" />
-        </button>
-        <button v-if="showUserArea" class="logout-btn" title="退出登录" @click="logout">
-          <ArrowRightOnRectangleIcon class="icon" />
-          <span>退出登录</span>
-        </button>
+    <nav v-if="!isAuthPage" class="navbar" aria-label="主导航">
+      <div class="navbar-inner">
+        <router-link to="/" class="logo" aria-label="知课行首页">
+          <span class="brand-symbol">知</span>
+          <span class="brand-name">知课行<small>AI 课程服务平台</small></span>
+        </router-link>
+        <div v-if="showUserArea" class="nav-links">
+          <router-link to="/" :class="{ active: route.path === '/' }">首页</router-link>
+          <router-link to="/agent" :class="{ active: route.path === '/agent' }">Agent 工作台 <span>↗</span></router-link>
+        </div>
+        <div class="nav-actions">
+          <button v-if="showUserArea" class="user-pill" type="button" title="修改昵称" @click="openNicknameDialog">
+            <UserCircleIcon class="icon" />
+            <span>{{ displayName }}</span>
+          </button>
+          <button class="icon-btn" type="button" title="切换主题" :aria-label="isDark ? '切换浅色主题' : '切换深色主题'" @click="toggleDark()">
+            <SunIcon v-if="isDark" class="icon" />
+            <MoonIcon v-else class="icon" />
+          </button>
+          <button v-if="showBack" class="icon-btn back-btn" type="button" title="返回首页" @click="goBack">
+            <ArrowLeftIcon class="icon" />
+          </button>
+          <button v-if="showUserArea" class="logout-btn" type="button" title="退出登录" @click="logout">
+            <ArrowRightOnRectangleIcon class="icon" />
+            <span>退出登录</span>
+          </button>
+        </div>
       </div>
     </nav>
     <div v-if="['/ai-chat', '/customer-service', '/chat-pdf', '/game', '/comfort-simulator'].includes(route.path)" class="legacy-notice">您正在使用经典应用。新版支持完整历史、文档引用与预约审批。<router-link to="/agent">进入 Agent 工作台 →</router-link></div>
@@ -182,13 +193,13 @@ onUnmounted(() => {
 
 <style lang="scss">
 :root {
-  --bg-color: #f5f7fb;
-  --text-color: #1f2937;
+  --bg-color: #f7f8f5;
+  --text-color: #142a2c;
 }
 
 .dark {
-  --bg-color: #171a21;
-  --text-color: #f4f7fb;
+  --bg-color: #17231f;
+  --text-color: #e8f2e9;
 }
 
 * {
@@ -206,8 +217,8 @@ body {
   min-height: 100vh;
   color: var(--text-color);
   background: var(--bg-color);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
 }
 
 button,
@@ -222,51 +233,127 @@ input {
 }
 
 .navbar {
-  min-height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 2rem;
+  height: 65px;
+  flex: 0 0 65px;
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(250, 253, 249, 0.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(29, 75, 55, 0.09);
+
+  .navbar-inner {
+    width: min(1320px, calc(100% - 52px));
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+  }
 
   .logo {
-    font-size: 1.35rem;
-    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
     text-decoration: none;
-    color: #006ed4;
-    letter-spacing: 0;
+    color: #183d32;
+  }
+
+  .brand-symbol {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    color: #f6fff8;
+    background: linear-gradient(140deg, #225f4c, #13845d);
+    box-shadow: 0 5px 13px rgba(13, 101, 66, 0.18);
+    font-size: 18px;
+    font-weight: 900;
+  }
+
+  .brand-name {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 17px;
+    font-weight: 850;
+    line-height: 1.1;
+    letter-spacing: 0.06em;
+
+    small {
+      color: #81958a;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 100%;
+
+    a {
+      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      color: #60786b;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+      transition: color .2s ease;
+
+      &::after {
+        content: '';
+        height: 2px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #32835e;
+        transform: scaleX(0);
+        transition: transform .2s ease;
+      }
+
+      &:hover,
+      &.active { color: #1b6346; }
+      &.active::after { transform: scaleX(1); }
+      span { color: #4f9e70; }
+    }
   }
 
   .nav-actions {
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 8px;
   }
 
   .user-pill {
-    max-width: 220px;
-    height: 36px;
+    max-width: 210px;
+    height: 35px;
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0 0.75rem;
-    border-radius: 8px;
-    color: #344054;
-    background: rgba(0, 124, 240, 0.08);
-    border: 1px solid rgba(0, 124, 240, 0.18);
+    gap: 7px;
+    padding: 0 11px;
+    border-radius: 9px;
+    color: #315e4c;
+    background: #edf6ef;
+    border: 1px solid #dcece0;
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    font-size: 11px;
+    font-weight: 760;
+    transition: background-color .2s ease, border-color .2s ease;
 
     &:hover {
-      color: #007cf0;
-      border-color: rgba(0, 124, 240, 0.36);
-      background: rgba(0, 124, 240, 0.12);
+      border-color: #a3d5b4;
+      background: #e3f3e8;
     }
 
     span {
@@ -278,53 +365,48 @@ input {
 
   .icon-btn,
   .logout-btn {
-    width: 36px;
-    height: 36px;
+    width: 35px;
+    height: 35px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.72);
-    color: var(--text-color);
+    border: 1px solid #e0e9e2;
+    border-radius: 9px;
+    background: #fff;
+    color: #3f6555;
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease;
 
     &:hover {
-      color: #007cf0;
-      border-color: rgba(0, 124, 240, 0.36);
-      background: rgba(0, 124, 240, 0.08);
+      color: #177d51;
+      border-color: #b4d8bd;
+      background: #f1f8f1;
     }
   }
 
   .logout-btn {
     width: auto;
-    min-width: 96px;
-    gap: 0.35rem;
-    padding: 0 0.75rem;
-    font-weight: 700;
+    min-width: 91px;
+    gap: 6px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 750;
   }
 
   .icon {
-    width: 21px;
-    height: 21px;
+    width: 18px;
+    height: 18px;
     flex: 0 0 auto;
   }
+
+  a:focus-visible,
+  button:focus-visible { outline: 3px solid #72d6a1; outline-offset: 3px; }
 }
 
-.agent-nav-link { color: #397366; text-decoration: none; font-size: 13px; margin-left: 12px; font-weight: 600; }
 .legacy-notice { padding: 9px 20px; background: #edf4f0; color: #527365; font-size: 12px; text-align: center; }
 .legacy-notice a { margin-left: 12px; color: #285e4e; font-weight: 600; }
-.dark .agent-nav-link { color: #91c5b1; }
 .dark .legacy-notice { background: #26372e; color: #a5c4b2; }
 .dark .legacy-notice a { color: #a5d8c0; }
-@media (max-width: 600px) {
-  .agent-nav-link { display: none; }
-  .navbar .logo { white-space: nowrap; flex-shrink: 0; }
-  .navbar .nav-actions { gap: 6px; }
-  .navbar .user-pill { padding: 0 7px; }
-  .navbar .user-pill span { display: none; }
-}
 
 .nickname-overlay {
   position: fixed;
@@ -367,9 +449,9 @@ input {
     cursor: pointer;
 
     &:hover {
-      color: #007cf0;
-      border-color: rgba(0, 124, 240, 0.28);
-      background: rgba(0, 124, 240, 0.08);
+      color: #1b8d60;
+      border-color: rgba(27, 141, 96, 0.28);
+      background: rgba(27, 141, 96, 0.08);
     }
   }
 
@@ -407,8 +489,8 @@ input {
       background: #ffffff;
 
       &:focus {
-        border-color: rgba(0, 124, 240, 0.58);
-        box-shadow: 0 0 0 3px rgba(0, 124, 240, 0.12);
+        border-color: rgba(27, 141, 96, 0.58);
+        box-shadow: 0 0 0 3px rgba(27, 141, 96, 0.12);
       }
     }
   }
@@ -460,28 +542,38 @@ input {
 
   .primary-btn {
     color: #ffffff;
-    border-color: #007cf0;
-    background: #007cf0;
+    border-color: #1b8d60;
+    background: #1b8d60;
 
     &:hover:not(:disabled) {
-      background: #006ed4;
+      background: #13764f;
     }
   }
 }
 
 .dark {
   .navbar {
-    background: rgba(23, 26, 33, 0.86);
+    background: rgba(24, 38, 32, 0.94);
     border-bottom-color: rgba(255, 255, 255, 0.08);
 
     .logo {
-      color: #62b9ff;
+      color: #e4f5e8;
+    }
+
+    .brand-name small {
+      color: #9db6a5;
+    }
+
+    .nav-links a {
+      color: #abc2b2;
+      &:hover,
+      &.active { color: #8ee1b1; }
     }
 
     .user-pill,
     .icon-btn,
     .logout-btn {
-      color: #f4f7fb;
+      color: #e6f3e9;
       background: rgba(255, 255, 255, 0.06);
       border-color: rgba(255, 255, 255, 0.1);
     }
@@ -529,24 +621,35 @@ input {
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 0.75rem 1rem;
-
-    .logo {
-      font-size: 1.1rem;
-    }
-
-    .user-pill {
-      max-width: 120px;
-    }
-
+    .navbar-inner { width: calc(100% - 28px); gap: 18px; }
+    .nav-links { gap: 12px; }
+    .user-pill { max-width: 100px; }
     .logout-btn {
-      min-width: 36px;
+      min-width: 35px;
       padding: 0;
 
-      span {
-        display: none;
-      }
+      span { display: none; }
     }
+  }
+}
+@media (max-width: 600px) {
+  .navbar {
+    .navbar-inner { gap: 9px; }
+    .brand-name small { display: none; }
+    .nav-links a:first-child { display: none; }
+    .nav-links a { font-size: 11px; }
+    .nav-links a span { display: none; }
+    .nav-actions { gap: 5px; }
+    .user-pill { width: 35px; padding: 0; justify-content: center; }
+    .user-pill span { display: none; }
+    .back-btn { display: none; }
+  }
+}
+@media (max-width: 390px) {
+  .navbar {
+    .brand-name { font-size: 14px; }
+    .nav-links a { font-size: 10px; }
+    .nav-actions { gap: 4px; }
   }
 }
 </style>

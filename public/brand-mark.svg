@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="知课行">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#185c4b"/>
+      <stop offset="1" stop-color="#169f70"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="17" fill="url(#g)"/>
+  <path d="M14 20c7-2 13-1 18 3v25c-5-4-11-5-18-3V20Zm36 0c-7-2-13-1-18 3v25c5-4 11-5 18-3V20Z" fill="none" stroke="#ecfff2" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M38 34l5-5 5 5M43 29v11" fill="none" stroke="#a8f5ca" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

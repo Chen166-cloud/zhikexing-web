@@ -60,7 +60,7 @@ export const useAgentStore = defineStore('agent', () => {
     try {
       workspaces.value = await agentApi.workspaces()
       // 只保存选择，不把历史消息、联系人或 Token 写进工作台缓存。
-      const saved = localStorage.getItem('iiip_workspace')
+      const saved = localStorage.getItem('zhikexing_workspace')
       const selected = workspaces.value.find((item) => item.id === saved) || workspaces.value[0]
       if (selected) await selectWorkspace(selected.id)
     } catch (failure) {
@@ -74,7 +74,7 @@ export const useAgentStore = defineStore('agent', () => {
     const current = ++generation
     clearRun()
     workspaceId.value = id
-    localStorage.setItem('iiip_workspace', id)
+    localStorage.setItem('zhikexing_workspace', id)
     conversation.value = null
     conversations.value = []
     runs.value = []
