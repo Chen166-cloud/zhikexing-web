@@ -68,11 +68,22 @@ export interface Approval {
   id: string
   runId: string
   actionId: string
+  /** 缺省值为普通预约；claim_trial 是免费试听申请。 */
+  toolName?: 'reserve_course' | 'claim_trial'
   status: string
   version: number
   args: Record<string, unknown>
   expiresAt: string
   result?: Record<string, unknown>
+}
+export interface TrialClaimResult {
+  actionId: string
+  requestId: string
+  campaignId: string
+  status: 'PENDING' | 'RESERVED' | 'SUCCEEDED' | 'REJECTED'
+  orderId?: string | null
+  reason?: string | null
+  amountCent?: number
 }
 export interface KnowledgeBase {
   id: string

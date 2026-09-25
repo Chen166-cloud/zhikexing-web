@@ -696,6 +696,14 @@
   gap: 6px;
   color: var(--accent);
 }
+.trial-result {
+  margin-top: 15px;
+  overflow-wrap: anywhere;
+}
+.trial-result p + p,
+.trial-result .n-button {
+  margin-top: 6px;
+}
 .panel-content {
   padding: 32px 38px 48px;
   flex: 1;

@@ -39,6 +39,7 @@ import {
   type Approval,
   type Citation,
   type RunEvent,
+  type TrialClaimResult,
 } from '../features/agent/types'
 import KnowledgePanel from '../features/agent/KnowledgePanel.vue'
 import EvaluationPanel from '../features/agent/EvaluationPanel.vue'
@@ -85,6 +86,25 @@ const runOptions = computed(() =>
 const visibleEvents = computed(() =>
   store.events.filter((item) => !['message.delta', 'usage.updated'].includes(item.type))
 )
+const approvalCards = computed(() =>
+  store.approvals.map((card) => {
+    let trialResult: TrialClaimResult | undefined
+    if (card.toolName === 'claim_trial') {
+      if (isTrialResult(card.result, card.actionId)) trialResult = card.result
+      // 审批 result 是提交时的快照；优先展示同一动作的后续数据库查询结果。
+      for (const event of store.events) {
+        if (
+          event.type === 'tool.completed' &&
+          ['claim_trial', 'query_trial_claim'].includes(String(event.data.name)) &&
+          isTrialResult(event.data.result, card.actionId)
+        ) {
+          trialResult = event.data.result
+        }
+      }
+    }
+    return { ...card, trialResult }
+  })
+)
 const canSubmit = computed(() =>
   Boolean(
     draft.value.trim() &&
@@ -102,7 +122,7 @@ const eventLabels: Record<string, string> = {
   'tool.started': '调用工具',
   'tool.completed': '工具返回',
   'message.completed': '回答已生成',
-  'message.reset': '补充证据引用',
+  'message.reset': '更新回答',
   'approval.required': '等待您确认',
   'approval.completed': '确认已处理',
   'input.required': '等待补充信息',
@@ -129,8 +149,45 @@ function approvalField(key: string) {
     remark: '备注',
     courseId: '课程编号',
     schoolId: '校区编号',
+    campaignId: '活动编号',
+    title: '活动',
+    startsAt: '开抢时间',
+    endsAt: '结束时间',
+    amountCent: '费用',
+    notice: '申请说明',
   }
   return labels[key] || key
+}
+function approvalValue(key: string, value: unknown) {
+  if (key === 'amountCent' && typeof value === 'number')
+    return value === 0 ? '0 元（免费）' : `${(value / 100).toFixed(2)} 元`
+  if (['startsAt', 'endsAt'].includes(key) && typeof value === 'string') {
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN')
+  }
+  return value
+}
+function isTrialResult(value: unknown, actionId: string): value is TrialClaimResult {
+  if (!value || typeof value !== 'object') return false
+  const result = value as Partial<TrialClaimResult>
+  return (
+    result.actionId === actionId &&
+    ['PENDING', 'RESERVED', 'SUCCEEDED', 'REJECTED'].includes(result.status || '')
+  )
+}
+function trialConfirmed(result: TrialClaimResult) {
+  return (
+    result.status === 'SUCCEEDED' &&
+    typeof result.orderId === 'string' &&
+    Boolean(result.orderId.trim())
+  )
+}
+function trialResultLabel(result: TrialClaimResult) {
+  if (trialConfirmed(result)) return '免费试听名额已确认'
+  if (result.status === 'REJECTED') return '未获得免费试听名额'
+  if (result.status === 'RESERVED') return '名额已预留，订单仍在处理中'
+  if (result.status === 'PENDING') return '申请已受理，仍在处理中'
+  return '结果尚待确认，请继续查询'
 }
 async function action(key: string, operation: () => Promise<unknown>) {
   actionBusy.value = key
@@ -406,23 +463,29 @@ onBeforeUnmount(() => store.disconnect())
                         : 'Agent 正在执行任务，可在右侧查看进度…'
                   }}
                 </div>
-                <article v-for="card in store.approvals" :key="card.id" class="approval-card">
+                <article v-for="card in approvalCards" :key="card.id" class="approval-card">
                   <div class="approval-heading">
-                    <span class="approval-icon">✓</span>
+                    <span class="approval-icon">
+                      <ClockIcon v-if="card.toolName === 'claim_trial'" class="small-icon" />
+                      <template v-else>✓</template>
+                    </span>
                     <div>
-                      <h3>试听预约草稿</h3>
-                      <p>请核对课程、校区与联系方式。</p>
+                      <h3>{{ card.toolName === 'claim_trial' ? '免费试听抢课申请' : '试听预约草稿' }}</h3>
+                      <p>{{ card.toolName === 'claim_trial' ? '请核对活动、课程、校区和开抢时间。' : '请核对课程、校区与联系方式。' }}</p>
                     </div>
                     <NTag :type="card.status === 'PENDING' ? 'warning' : 'default'" size="small">{{
-                      statusLabel(card.status)
+                      card.toolName === 'claim_trial' && card.status === 'EXECUTED' ? '已提交申请' : statusLabel(card.status)
                     }}</NTag>
                   </div>
                   <dl>
                     <template v-for="(value, key) in card.args" :key="key"
                       ><dt>{{ approvalField(String(key)) }}</dt>
-                      <dd>{{ value }}</dd></template
+                      <dd>{{ approvalValue(String(key), value) }}</dd></template
                     >
                   </dl>
+                  <NAlert v-if="card.toolName === 'claim_trial'" type="info" :show-icon="false">
+                    草稿不预占名额，批准后才提交申请，以最终订单结果为准。停止 Agent 不会撤销已受理的申请。
+                  </NAlert>
                   <p class="muted">
                     有效期至 {{ new Date(card.expiresAt).toLocaleString('zh-CN') }}
                   </p>
@@ -434,10 +497,28 @@ onBeforeUnmount(() => store.disconnect())
                       :loading="actionBusy === card.id"
                       :disabled="Boolean(actionBusy)"
                       @click="decide(card, 'APPROVED')"
-                      >确认并办理预约</NButton
+                      >{{ card.toolName === 'claim_trial' ? '确认提交免费抢课' : '确认并办理预约' }}</NButton
                     >
                   </div>
-                  <div v-if="card.result" class="approval-result">
+                  <NAlert
+                    v-if="card.toolName === 'claim_trial' && card.trialResult"
+                    class="trial-result"
+                    :type="trialConfirmed(card.trialResult) ? 'success' : card.trialResult.status === 'REJECTED' ? 'warning' : 'info'"
+                    :title="trialResultLabel(card.trialResult)"
+                  >
+                    <p v-if="trialConfirmed(card.trialResult)">订单编号：{{ card.trialResult.orderId }}</p>
+                    <p v-if="card.trialResult.requestId">申请编号：{{ card.trialResult.requestId }}</p>
+                    <p>动作编号：{{ card.actionId }}</p>
+                    <p v-if="card.trialResult.reason">原因：{{ card.trialResult.reason }}</p>
+                    <NButton
+                      v-if="!trialConfirmed(card.trialResult) && card.trialResult.status !== 'REJECTED'"
+                      size="small"
+                      :disabled="store.active || store.sending"
+                      title="将查询请求填入输入框，发送后查询最新结果"
+                      @click="usePrompt(`查询免费试听申请结果，动作编号：${card.actionId}`)"
+                    >继续查询结果</NButton>
+                  </NAlert>
+                  <div v-else-if="card.result && card.toolName !== 'claim_trial'" class="approval-result">
                     <CheckCircleIcon class="small-icon" />办理结果：{{
                       card.result.reservationId || card.result.status || '已提交'
                     }}
