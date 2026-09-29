@@ -72,8 +72,8 @@
 
           <p v-if="error" class="error" role="alert">{{ error }}</p>
 
-          <button class="submit-btn" type="submit" :disabled="loading">
-            <span>{{ loading ? '正在创建…' : '创建账户' }}</span>
+          <button class="submit-btn" type="submit" :disabled="loading || retrySeconds > 0">
+            <span>{{ retrySeconds > 0 ? `请在 ${retrySeconds} 秒后重试` : loading ? '正在创建…' : '创建账户' }}</span>
             <ArrowRightIcon class="btn-icon" />
           </button>
 
@@ -103,6 +103,7 @@ import {
   UserIcon,
 } from '@heroicons/vue/24/outline'
 import { authAPI } from '../services/api'
+import { useAuthRetry } from '../composables/useAuthRetry'
 
 const isDark = useDark()
 const router = useRouter()
@@ -111,8 +112,10 @@ const error = ref('')
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const form = reactive({ userName: '', password: '', confirmPassword: '' })
+const { retrySeconds, waitBeforeRetry } = useAuthRetry()
 
 const submit = async () => {
+  if (loading.value || retrySeconds.value > 0) return
   error.value = ''
   if (!form.userName || !form.password || !form.confirmPassword) {
     error.value = '请完整填写注册信息'
@@ -128,6 +131,7 @@ const submit = async () => {
     router.push('/')
   } catch (err) {
     error.value = err.message || '注册失败'
+    if (err.retryAfter > 0) waitBeforeRetry(err.retryAfter)
   } finally {
     loading.value = false
   }

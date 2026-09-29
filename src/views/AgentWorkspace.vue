@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useDark } from '@vueuse/core'
 import {
   NConfigProvider,
@@ -48,6 +49,8 @@ import DocumentPreview from '../features/agent/DocumentPreview.vue'
 import '../features/agent/workspace.css'
 
 const store = useAgentStore()
+const route = useRoute()
+const router = useRouter()
 const isDark = useDark()
 const tab = ref('assistant')
 const draft = ref('')
@@ -256,7 +259,17 @@ watch(
     }
   }
 )
-onMounted(() => void store.initialize())
+onMounted(async () => {
+  await store.initialize()
+  const { courseId, courseName } = route.query
+  if (typeof courseId === 'string' && typeof courseName === 'string' && store.workspaceId && !store.error) {
+    // 从课程页进入时仅准备新咨询，发送与业务办理仍由用户确认。
+    store.newConversation()
+    await nextTick()
+    draft.value = `我想了解“${courseName}”（课程编号：${courseId}）的学习要求、学习安排和预约方式。`
+    void router.replace({ path: '/agent' })
+  }
+})
 onBeforeUnmount(() => store.disconnect())
 </script>
 

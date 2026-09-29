@@ -2,6 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
+    path: '/courses',
+    name: 'Courses',
+    component: () => import('../views/CoursesView.vue'),
+  },
+  {
+    path: '/courses/:id',
+    name: 'CourseDetail',
+    component: () => import('../views/CourseDetailView.vue'),
+  },
+  {
     path: '/agent',
     name: 'AgentWorkspace',
     component: () => import('../views/AgentWorkspace.vue'),

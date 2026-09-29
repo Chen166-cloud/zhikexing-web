@@ -97,9 +97,9 @@ const experiments = [
             <router-link to="/agent" class="button button-primary">
               进入 Agent 工作台 <ArrowRightIcon class="button-icon" />
             </router-link>
-            <a href="#capabilities" class="button button-ghost">
-              探索平台能力 <ArrowUpRightIcon class="button-icon" />
-            </a>
+            <router-link to="/courses" class="button button-ghost">
+              浏览课程广场 <ArrowUpRightIcon class="button-icon" />
+            </router-link>
           </div>
           <div class="hero-points" aria-label="平台特点">
             <span><CheckCircleIcon /> 回答可追溯</span>

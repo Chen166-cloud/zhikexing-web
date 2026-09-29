@@ -59,7 +59,9 @@ const authRequest = async (path, body) => {
     authStorage.clearToken()
   }
   if (!response.ok || result.ok === 0) {
-    throw new Error(result.msg || `HTTP error! status: ${response.status}`)
+    const error = new Error(result.msg || result.message || `请求失败（${response.status}）`)
+    error.retryAfter = Number(response.headers.get('Retry-After')) || 0
+    throw error
   }
   return result
 }

@@ -128,6 +128,7 @@ onUnmounted(() => {
         </router-link>
         <div v-if="showUserArea" class="nav-links">
           <router-link to="/" :class="{ active: route.path === '/' }">首页</router-link>
+          <router-link to="/courses" :class="{ active: route.path.startsWith('/courses') }">课程广场</router-link>
           <router-link to="/agent" :class="{ active: route.path === '/agent' }">Agent 工作台 <span>↗</span></router-link>
         </div>
         <div class="nav-actions">
@@ -647,7 +648,7 @@ input {
 }
 @media (max-width: 390px) {
   .navbar {
-    .brand-name { font-size: 14px; }
+    .brand-name { display: none; }
     .nav-links a { font-size: 10px; }
     .nav-actions { gap: 4px; }
   }
