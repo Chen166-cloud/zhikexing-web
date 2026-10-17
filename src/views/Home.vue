@@ -6,7 +6,6 @@ import {
   BookOpenIcon,
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
-  ChevronDownIcon,
   DocumentTextIcon,
   LockClosedIcon,
   SparklesIcon,
@@ -72,12 +71,6 @@ const steps = [
   },
 ]
 
-const experiments = [
-  { label: 'AI 聊天', path: '/ai-chat' },
-  { label: '智能客服', path: '/customer-service' },
-  { label: 'ChatPDF', path: '/chat-pdf' },
-  { label: '互动体验', path: '/game' },
-]
 </script>
 
 <template>
@@ -237,12 +230,6 @@ const experiments = [
     <footer class="home-footer">
       <div class="home-container footer-content">
         <div class="footer-brand"><span class="mini-mark">知</span><span>知课行 <small>AI 课程服务平台</small></span></div>
-        <details class="experiment-links">
-          <summary>更多体验功能 <ChevronDownIcon /></summary>
-          <div>
-            <router-link v-for="item in experiments" :key="item.path" :to="item.path">{{ item.label }}</router-link>
-          </div>
-        </details>
         <span class="footer-note">让知识，成为可靠的行动。</span>
       </div>
     </footer>
@@ -277,7 +264,7 @@ const experiments = [
   transition: transform .25s ease, background .25s ease, box-shadow .25s ease, color .25s ease;
 }
 .button:hover { transform: translateY(-3px); }
-.button:focus-visible, .capability-card:focus-visible, .experiment-links a:focus-visible { outline: 3px solid #66d9b2; outline-offset: 4px; }
+.button:focus-visible, .capability-card:focus-visible { outline: 3px solid #66d9b2; outline-offset: 4px; }
 .button-icon { width: 18px; height: 18px; flex: 0 0 auto; }
 .button-primary { color: #092924; background: #83e6bc; box-shadow: 0 14px 38px rgba(84, 223, 172, .18); }
 .button-primary:hover { background: #a0f3d0; box-shadow: 0 18px 44px rgba(84, 223, 172, .28); }
@@ -431,13 +418,7 @@ const experiments = [
 .footer-content { display: flex; align-items: center; gap: 35px; }
 .footer-brand { display: inline-flex; align-items: center; gap: 10px; color: #173d32; font-size: 15px; font-weight: 850; white-space: nowrap; }
 .footer-brand > span:last-child { display: grid; gap: 2px; }.footer-brand small { color: #7d9286; font-size: 9px; font-weight: 650; letter-spacing: .06em; }
-.experiment-links { margin-left: auto; position: relative; font-size: 11px; }
-.experiment-links summary { display: flex; align-items: center; gap: 5px; list-style: none; cursor: pointer; font-weight: 700; }
-.experiment-links summary::-webkit-details-marker { display: none; }
-.experiment-links summary svg { width: 13px; height: 13px; transition: transform .2s; }.experiment-links[open] summary svg { transform: rotate(180deg); }
-.experiment-links > div { position: absolute; right: 0; bottom: 26px; width: 145px; display: grid; gap: 1px; padding: 7px; border: 1px solid #d7e2d8; border-radius: 10px; background: #fff; box-shadow: 0 14px 40px rgba(17, 57, 39, .12); }
-.experiment-links a { padding: 7px 9px; border-radius: 5px; text-decoration: none; white-space: nowrap; }.experiment-links a:hover { background: #edf5ee; }
-.footer-note { font-size: 11px; white-space: nowrap; }
+.footer-note { margin-left: auto; font-size: 11px; white-space: nowrap; }
 
 .home-dark { --page-bg: #17231f; --page-ink: #e8f2e9; --page-muted: #9fb4a9; }
 .home-dark .capability-card { color: #e6f0e9; background: #223129; border-color: #344b3c; }
@@ -445,7 +426,6 @@ const experiments = [
 .home-dark .workflow-section, .home-dark .closing-section, .home-dark .home-footer { background: #1d2b23; }
 .home-dark .workflow-step { border-color: #476b53; }.home-dark .workflow-step::before { background: #1d2b23; }
 .home-dark .home-footer { border-color: #344a39; }.home-dark .footer-brand { color: #e0f0e4; }
-.home-dark .experiment-links > div { background: #26362a; border-color: #47604a; }.home-dark .experiment-links a:hover { background: #344c3b; }
 .home-dark .card-footer { color: #a1d8b6; }
 
 @media (max-width: 1100px) {
@@ -471,7 +451,7 @@ const experiments = [
   .workflow-steps { grid-template-columns: 1fr; gap: 6px; margin-top: 35px; }.workflow-step { min-height: 130px; }.workflow-step h3 { margin-top: 12px; }
   .trial-section { padding-block: 48px; }.trial-panel { gap: 0; padding: 32px 25px; }.trial-copy h2 { font-size: 32px; }.trial-art { height: 230px; transform: scale(.85); transform-origin: center top; }
   .closing-section { padding-block: 60px; }.closing-layout { display: block; }.closing-layout .button { margin-top: 27px; }
-  .footer-content { flex-wrap: wrap; gap: 18px; }.experiment-links { margin-left: auto; }.footer-note { width: 100%; }
+  .footer-content { flex-wrap: wrap; gap: 18px; }.footer-note { width: 100%; margin-left: 0; }
 }
 @media (max-width: 360px) {
   .narrow-break { display: block; }

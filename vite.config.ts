@@ -20,6 +20,5 @@ export default defineConfig(({ mode }) => {
         ['/api', '/user', '/ai'].map((path) => [path, { target, changeOrigin: true }])
       ),
     },
-    optimizeDeps: { exclude: ['@pdftron/webviewer'] },
   }
 })

@@ -33,31 +33,12 @@ const routes = [
     name: 'Home',
     component: () => import('../views/Home.vue'),
   },
-  {
-    path: '/ai-chat',
-    name: 'AIChat',
-    component: () => import('../views/AIChat.vue'),
-  },
-  {
-    path: '/comfort-simulator',
-    name: 'ComfortSimulator',
-    component: () => import('../views/ComfortSimulator.vue'),
-  },
-  {
-    path: '/customer-service',
-    name: 'CustomerService',
-    component: () => import('../views/CustomerService.vue'),
-  },
-  {
-    path: '/chat-pdf',
-    name: 'ChatPDF',
-    component: () => import('../views/ChatPDF.vue'),
-  },
-  {
-    path: '/game',
-    name: 'Game',
-    component: () => import('../views/GameChat.vue'),
-  },
+  // 历史书签继续进入现有工作台，不再加载已停用的经典应用。
+  { path: '/ai-chat', redirect: '/agent' },
+  { path: '/comfort-simulator', redirect: '/agent' },
+  { path: '/customer-service', redirect: '/agent' },
+  { path: '/chat-pdf', redirect: '/agent' },
+  { path: '/game', redirect: '/agent' },
   {
     path: '/:pathMatch(.*)*',
     redirect: '/',
@@ -69,11 +50,7 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from) => {
-  if (from.path === '/chat-pdf') {
-    window.dispatchEvent(new CustomEvent('cleanupChatPDF'))
-  }
-
+router.beforeEach((to) => {
   const hasToken = Boolean(localStorage.getItem('zhikexing_token'))
   if (!to.meta.public && !hasToken) {
     return {

@@ -150,7 +150,6 @@ onUnmounted(() => {
         </div>
       </div>
     </nav>
-    <div v-if="['/ai-chat', '/customer-service', '/chat-pdf', '/game', '/comfort-simulator'].includes(route.path)" class="legacy-notice">您正在使用经典应用。新版支持完整历史、文档引用与预约审批。<router-link to="/agent">进入 Agent 工作台 →</router-link></div>
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />
@@ -404,10 +403,6 @@ input {
   button:focus-visible { outline: 3px solid #72d6a1; outline-offset: 3px; }
 }
 
-.legacy-notice { padding: 9px 20px; background: #edf4f0; color: #527365; font-size: 12px; text-align: center; }
-.legacy-notice a { margin-left: 12px; color: #285e4e; font-weight: 600; }
-.dark .legacy-notice { background: #26372e; color: #a5c4b2; }
-.dark .legacy-notice a { color: #a5d8c0; }
 
 .nickname-overlay {
   position: fixed;
